@@ -1,0 +1,30 @@
+import socket
+import os
+
+# 输入要发送的文件信息，ip，端口号等
+filename = input('输入文件名:')
+ip = input('输入ip地址:')
+port = int(input('输入端口号:'))
+server_address = (ip, port)
+
+# 创建UDP套接字
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# 先行发送文件名
+sock.sendto(filename.encode(), server_address)
+
+# 获取文件大小并发送给接收方
+file_size = os.path.getsize(filename)
+sock.sendto(str(file_size).encode(), server_address)
+
+# 分段发送文件数据
+with open(filename, 'rb') as file:
+    while True:
+        data = file.read(2048)
+        if not data:
+            print('文件发送完成')
+            break
+        sock.sendto(data, server_address)
+
+# 关闭套接字
+sock.close()
